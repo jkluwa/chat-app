@@ -4,28 +4,84 @@ import CustomButton from "../components/common/customButton";
 import FormModal from "../components/common/formModal";
 
 type Action = {
-  type: "name" | "password" | "email";
+  type: string;
+  value?: string;
+};
+
+type Input = {
   value: string;
+  valid: boolean;
 };
 
 type State = {
-  name: string;
-  email: string;
-  password: string;
+  name: Input;
+  password: Input;
 };
 
-const inputReducer = (state: State, action: Action) => {
+const inputReducer = (state: State, action: Action): State => {
   switch (action.type) {
+    case "nameBlur":
+      if (state.name.value.trim().length < 4) {
+        return {
+          ...state,
+          name: {
+            value: state.name.value,
+            valid: false,
+          },
+        };
+      }
+      return state;
+    case "passwordBlur":
+      let nums = 0;
+      for (let i = 0; i < state.password.value.trim().length; i++) {
+        if (state.password.value[i] >= "0" && state.password.value[i] <= "9") {
+          ++nums;
+        }
+        if (nums >= 3) {
+          console.log(state.password.value.trim().length - nums);
+          if (state.password.value.trim().length - nums < 3) {
+            if (state.password.value.trim().length === i) {
+              break;
+            } else {
+              continue;
+            }
+          }
+          return {
+            ...state,
+            password: {
+              value: state.password.value,
+              valid: true,
+            },
+          };
+        }
+      }
+      return {
+        ...state,
+        password: {
+          value: state.password.value,
+          valid: false,
+        },
+      };
     case "name":
       return {
         ...state,
-        name: action.value,
+        name: {
+          // @ts-ignore
+          value: action.value,
+          valid: true,
+        },
       };
-    default:
+    case "password":
       return {
         ...state,
-        password: action.value,
+        password: {
+          // @ts-ignore
+          value: action.value,
+          valid: true,
+        },
       };
+    default:
+      return state;
   }
 };
 
@@ -34,23 +90,35 @@ const LoginForm = (props: { changeForm: () => void }) => {
     event.preventDefault();
   };
 
-  const [{ name, password }, dispatch] = useReducer(inputReducer, {
-    name: "",
-    email: "",
-    password: "",
+  const [state, dispatch] = useReducer(inputReducer, {
+    name: { value: "", valid: true },
+    password: { value: "", valid: true },
   });
-  const onChange = (action: Action) => {
-    dispatch({ type: action.type, value: action.value });
+  const changeHandler = (action: Action) => {
+    if (action.value) {
+      dispatch({ type: action.type, value: action.value });
+    } else {
+      dispatch({ type: action.type });
+    }
   };
-
   return (
     <FormModal
       changeForm={props.changeForm}
       message="Don't have an account?"
       linkMessage="click here to sign up"
     >
-      <CustomInput label={"name"} onChange={onChange} value={name} />
-      <CustomInput label={"password"} onChange={onChange} value={password} />
+      <CustomInput
+        label="name"
+        action={changeHandler}
+        value={state.name.value}
+        valid={state.name.valid}
+      />
+      <CustomInput
+        label="password"
+        action={changeHandler}
+        value={state.password.value}
+        valid={state.password.valid}
+      />
       <CustomButton text="login" onClick={onClick} />
     </FormModal>
   );

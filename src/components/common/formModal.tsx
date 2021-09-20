@@ -3,14 +3,16 @@ import styled from "styled-components";
 
 const Container = styled.div`
   height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   & > form {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background: #bbb;
-    width: 600px;
-    height: 320px;
+    padding: 50px 90px;
     & > div {
       margin: 10px;
     }
